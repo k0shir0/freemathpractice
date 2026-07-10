@@ -1,6 +1,5 @@
 <html>
     <head>
-        <!--HTML file auto generated using EmulatorJS codehelper-->
         <style>
             body, html {
                 margin: 0;
@@ -13,14 +12,49 @@
             <div id="game"></div>
         </div>
         <script>
-            EJS_player = "#game";
-            EJS_core = "gba";
-            EJS_gameName = "FireRed ";
-            EJS_color = "#000000";
-            EJS_startOnLoaded = true;
-            EJS_pathtodata = "https://cdn.emulatorjs.org/stable/data/";
-            EJS_gameUrl = "1636 - Pokemon Fire Red (U)(Squirrels).gba";
+            // 1. Define your GitHub repository details
+            const githubOwner = 'k0shir0'; 
+            const githubRepo = 'freemathpractice';        
+            const folderPath = '';                      // Leave empty if the ROM is in the root directory
+
+            // 2. Query the GitHub API for the folder contents
+            const apiUrl = `https://api.github.com/repos/${githubOwner}/${githubRepo}/contents/${folderPath}`;
+
+            fetch(apiUrl)
+                .then(response => {
+                    if (!response.ok) throw new Error("Could not fetch repository contents.");
+                    return response.json();
+                })
+                .then(data => {
+                    // 3. Search the returned data for the first .gba file
+                    const gbaFile = data.find(file => file.name.endsWith('.gba'));
+
+                    if (gbaFile) {
+                        console.log(`Found ROM: ${gbaFile.name}`);
+                        
+                        // 4. Initialize EmulatorJS with the dynamically found file
+                        window.EJS_player = "#game";
+                        window.EJS_core = "gba";
+                        window.EJS_gameName = gbaFile.name.replace('.gba', ''); // Uses the filename as the title
+                        window.EJS_color = "#000000";
+                        window.EJS_startOnLoaded = true;
+                        window.EJS_pathtodata = "https://cdn.emulatorjs.org/stable/data/";
+                        
+                        // Use GitHub's raw download URL for the ROM
+                        window.EJS_gameUrl = gbaFile.download_url; 
+
+                        // 5. Load the EmulatorJS script only AFTER we know the file URL
+                        const script = document.createElement('script');
+                        script.src = "https://cdn.emulatorjs.org/stable/data/loader.js";
+                        document.body.appendChild(script);
+                    } else {
+                        document.getElementById('game').innerHTML = "<h3 style='color:white; text-align:center; padding-top:20px;'>Error: No .gba file found in the repository.</h3>";
+                    }
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    document.getElementById('game').innerHTML = "<h3 style='color:white; text-align:center; padding-top:20px;'>Error loading repository data. Check console.</h3>";
+                });
         </script>
-        <script src="https://cdn.emulatorjs.org/stable/data/loader.js"></script>
     </body>
 </html>
